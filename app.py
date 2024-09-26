@@ -57,3 +57,10 @@ target_language = st.text_input("Enter target language:")
 if st.button("Translate"):
     translation = zap.translate(text_to_translate, target_language)
     display_result(translation)
+
+# Unit Conversion Function
+st.header("Unit Conversion Function")
+conversion_query = st.text_input("Enter your unit conversion query:")
+if st.button("Convert Units"):
+    conversion_result = zap.convert_units(conversion_query)
+    display_result(conversion_result)

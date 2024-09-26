@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import re
 from duckduckgo_search import DDGS
 from functools import lru_cache
+from pint import UnitRegistry
 
 # Load environment variables
 load_dotenv()
@@ -266,6 +267,42 @@ class Langzap:
         instruction = f"Translate the following text to {target_language}:"
         output_instruction = f"Provide the translation in {target_language}."
         return self.ask_structured(instruction, text, output_instruction, model)
+
+    def convert_units(self, query, model=None):
+        """
+        Detect and convert units based on the given query.
+
+        Args:
+            query (str): The query containing unit conversion request.
+            model (str, optional): The model to use for the API call.
+                                   If not provided, uses the default model.
+
+        Returns:
+            str: The result of the unit conversion.
+        """
+        ureg = UnitRegistry()
+
+        instruction = "Analyze the following query and extract the value, source unit, and target unit for conversion:"
+        output_instruction = "Provide the extracted information as a Python dictionary with keys 'value', 'from_unit', and 'to_unit'. Only include the dictionary in your response."
+        
+        extraction = self.ask_structured(instruction, query, output_instruction, model)
+        
+        try:
+            # Safely evaluate the string as a Python expression
+            import ast
+            extracted_info = ast.literal_eval(extraction.strip())
+            
+            value = float(extracted_info['value'])
+            from_unit = ureg(extracted_info['from_unit'])
+            to_unit = ureg(extracted_info['to_unit'])
+            
+            result = value * from_unit.to(to_unit)
+            
+            preparsed = f"{value} {from_unit} is equal to {result:.4f} {to_unit}"
+            parsed = self.process(preparsed, "Remove extras from output", "Provide the parsed and converted result as a string. Only include the string in your response.")
+            return parsed
+        except Exception as e:
+            return f"Error in unit conversion: {e}"
 
 # Usage example:
 if __name__ == "__main__":
