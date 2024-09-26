@@ -134,3 +134,4 @@ config.yaml
 
 # Ignore text files
 *.txt
+getunits.py

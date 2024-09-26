@@ -64,3 +64,10 @@ conversion_query = st.text_input("Enter your unit conversion query:")
 if st.button("Convert Units"):
     conversion_result = zap.convert_units(conversion_query)
     display_result(conversion_result)
+
+# Calculate Function
+st.header("Calculate Function")
+expression = st.text_input("Enter a mathematical expression:")
+if st.button("Calculate"):
+    calculation_result = zap.calculate(expression)
+    display_result(calculation_result)

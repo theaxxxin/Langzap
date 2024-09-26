@@ -5,6 +5,7 @@ import re
 from duckduckgo_search import DDGS
 from functools import lru_cache
 from pint import UnitRegistry
+import sympy
 
 # Load environment variables
 load_dotenv()
@@ -304,6 +305,31 @@ class Langzap:
         except Exception as e:
             return f"Error in unit conversion: {e}"
 
+    def calculate(self, query, model=None):
+        """
+        Evaluate a mathematical expression or text-based math query using sympy.
+
+        Args:
+            query (str): The mathematical expression or text-based math query to evaluate.
+            model (str, optional): The model to use for the API call.
+                                   If not provided, uses the default model.
+
+        Returns:
+            str: The result of the calculation.
+        """
+        instruction = "Convert the following text or mathematical expression into a valid Python mathematical expression:"
+        output_instruction = "Provide only the Python mathematical expression as a string, without any additional text or explanation."
+        
+        prepared_expression = self.ask_structured(instruction, query, output_instruction, model)
+        
+        try:
+            result = sympy.sympify(prepared_expression).evalf()
+            raw_output = f"{query} = {result}"
+            parsed_output = self.process(raw_output, "Correct any grammar issues in this mathematical statement", "Provide the grammatically correct statement as a string. Only include the corrected string in your response.")
+            return parsed_output
+        except Exception as e:
+            return f"Error in calculation: {e}"
+
 # Usage example:
 if __name__ == "__main__":
     # Initialize with a custom default model
@@ -320,6 +346,15 @@ if __name__ == "__main__":
     # Other examples remain the same, but will use the default model unless specified otherwise
 
     # Example of using the research function
-    zap = Langzap()
     research_result = zap.research("Latest advancements in quantum computing", model="llama-3.1-8b-instant")
     print("Research result:", research_result)
+
+    # Example of a more complex calculation
+    complex_calc = zap.calculate("integrate(x^2 + 2*x + 1, x)")
+    print("Complex calculation result:", complex_calc)
+
+    #example of a simple cacluation
+    simple_calc = zap.calculate("1+2")
+    print("Simple calculation result:", simple_calc)
+
+    
